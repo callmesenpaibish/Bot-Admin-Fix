@@ -32,10 +32,9 @@ WEB_BASE_URL: str = os.environ.get(
     f"https://{_dev_domain}" if _dev_domain else ""
 )
 
-# Player URL — defaults to the built-in player served by this bot's web server.
-# The player uses /proxy to bypass Terabox's hotlink protection.
-# Override PLAYER_BASE_URL env var if you want to use an external player instead.
+# Player URL — use the GitHub Pages hosted player by default.
+# Override PLAYER_BASE_URL env var to point at a custom player.
 PLAYER_BASE_URL: str = os.environ.get(
     "PLAYER_BASE_URL",
-    f"{WEB_BASE_URL}/web/player.html" if WEB_BASE_URL else "https://callmesenpaibish.github.io/player/player.html",
+    "https://callmesenpaibish.github.io/player/player.html",
 )

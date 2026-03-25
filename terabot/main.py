@@ -83,14 +83,21 @@ async def video_proxy(request: web.Request) -> web.StreamResponse:
 # --- BOT & WEB SETUP ---
 
 def create_client() -> Client:
-    # We return the client object here
     return Client(
-        "terabot_session", # Changed name to avoid old ghost sessions
+        "terabot_session",
         bot_token=config.BOT_TOKEN,
         api_id=config.API_ID,
         api_hash=config.API_HASH,
-        plugins=dict(root="terabot/plugins")
     )
+
+
+def register_plugins(app: Client):
+    from plugins import admin_panel, user_panel, terabox, payment_flow
+    admin_panel.register(app)
+    user_panel.register(app)
+    terabox.register(app)
+    payment_flow.register(app)
+    logger.info("✅ All plugins registered")
 
 async def health_check(request):
     return web.Response(text="✅ TeraBot is running!")
@@ -120,11 +127,22 @@ async def main():
 
     # 2. Initialize MongoDB
     try:
+        from database.users_db import init_users_col
+        from database.admin_db import init_admin_col
+        from database.cache_db import init_cache_col
+        from database.plans_db import init_plans_col
+        from database.fsc_db import init_fsc_col
+
         mongo_client = motor.motor_asyncio.AsyncIOMotorClient(config.MONGO_URI)
         db = mongo_client["terabot_db"]
-        # If you have specific init functions, call them here:
-        # init_database(mongo_client)
-        logger.info("✅ Database connected")
+
+        init_users_col(db["users"])
+        init_admin_col(db["settings"])
+        init_cache_col(db["link_cache"])
+        init_plans_col(db["plans"])
+        init_fsc_col(db["fsc_channels"])
+
+        logger.info("✅ Database connected and collections initialized")
     except Exception as e:
         logger.error(f"❌ MongoDB Connection Failed: {e}")
         return
@@ -134,6 +152,7 @@ async def main():
 
     # 4. Start Telegram Client
     app = create_client()
+    register_plugins(app)
     await app.start()
     
     me = await app.get_me()

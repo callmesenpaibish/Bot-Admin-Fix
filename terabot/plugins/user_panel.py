@@ -13,6 +13,7 @@ import config
 from database.users_db import upsert_user, get_user
 from database.admin_db import get_settings
 from utils.helpers import build_main_keyboard, format_timestamp
+from plugins.payment_flow import show_plans_message  # ✅ ADD THIS
 
 logger = logging.getLogger(__name__)
 
@@ -27,21 +28,14 @@ def register(app: Client):
         if len(message.command) > 1:
             encoded_payload = message.command[1]
             try:
-                # Fix the base64 padding
                 padding = '=' * (4 - (len(encoded_payload) % 4))
                 decoded_bytes = base64.urlsafe_b64decode(encoded_payload + padding)
                 terabox_link = decoded_bytes.decode('utf-8')
                 
-                # Import your handler
                 from plugins.terabox import handle_terabox
-                
-                # Trick the handler by swapping the /start command with the real link
                 message.text = terabox_link 
-                
-                # Trigger the download
                 await handle_terabox(client, message)
-                
-                return # Stop here so it doesn't send the normal welcome menu
+                return
                 
             except Exception as e:
                 logger.error(f"Failed to decode deep link: {e}")
@@ -66,6 +60,11 @@ def register(app: Client):
             "📥 **Send me your Terabox link and I'll download it instantly!**\n\n"
             "Just paste any Terabox URL and I'll handle the rest. 🚀"
         )
+
+    # ✅ FIX: Premium Plans handler (THIS WAS MISSING)
+    @app.on_message(filters.text & filters.regex(r"^💎 Premium Plans$"))
+    async def premium_plans(client: Client, message: Message):
+        await show_plans_message(client, message)
 
     @app.on_message(filters.text & filters.regex(r"^📞 Contact us$"))
     async def contact_us(client: Client, message: Message):

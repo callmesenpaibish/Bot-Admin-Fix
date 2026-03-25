@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from aiohttp import web, ClientSession, ClientTimeout, ClientResponseError
 from pyrogram import Client
+from reminder import start_reminders
 import motor.motor_asyncio
 
 import config
@@ -154,6 +155,7 @@ async def main():
     app = create_client()
     register_plugins(app)
     await app.start()
+    start_reminders(app)
     
     me = await app.get_me()
     logger.info(f"🤖 Bot started as @{me.username}")

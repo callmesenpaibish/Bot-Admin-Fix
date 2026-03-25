@@ -20,7 +20,7 @@ XAPIVERSE_KEY: str = _require("XAPIVERSE_KEY")
 _raw_admin_ids = _require("ADMIN_IDS")
 ADMIN_IDS: list[int] = [int(x.strip()) for x in _raw_admin_ids.split(",") if x.strip()]
 
-SUPPORT_CHAT: str = os.environ.get("SUPPORT_CHAT", "https://t.me/your_support_chat")
+SUPPORT_CHAT: str = os.environ.get("SUPPORT_CHAT", "https://t.me/secretsocietysupportbot")
 
 CACHE_TTL_SECONDS: int = int(os.environ.get("CACHE_TTL_SECONDS", "3600"))
 XAPIVERSE_URL: str = "https://xapiverse.com/api/terabox"

@@ -2,6 +2,7 @@ import re
 import logging
 import asyncio
 import aiohttp
+from urllib.parse import quote
 from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -18,10 +19,9 @@ TERABOX_PATTERN = re.compile(r"(https?://[^\s]*tera[^\s]*)", re.IGNORECASE)
 
 
 def build_result_keyboard(download_link: str, file_name: str) -> InlineKeyboardMarkup:
-    encoded_name = file_name.replace(" ", "%20")
-    player_url = (
-        f"{config.PLAYER_BASE_URL}?url={download_link}&name={encoded_name}"
-    )
+    encoded_url = quote(download_link, safe="")
+    encoded_name = quote(file_name, safe="")
+    player_url = f"{config.PLAYER_BASE_URL}?url={encoded_url}&name={encoded_name}"
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("▶️ Watch Online", url=player_url)],
         [InlineKeyboardButton("📥 Direct Download Link", url=download_link)],
@@ -139,7 +139,6 @@ async def send_file_result(message: Message, result: dict, settings: dict):
                 photo=result["thumbnail"],
                 caption=caption,
                 reply_markup=keyboard,
-                protect_content=protect,
             )
             return sent
         except Exception as e:

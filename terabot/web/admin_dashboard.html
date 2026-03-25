@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — TeraBot</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg:        #0f0f13;
+      --surface:   #1a1a24;
+      --surface2:  #22223a;
+      --border:    #2e2e4a;
+      --accent:    #6c63ff;
+      --accent2:   #a78bfa;
+      --success:   #22c55e;
+      --danger:    #ef4444;
+      --text:      #e2e8f0;
+      --muted:     #94a3b8;
+      --radius:    14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      padding: 20px 16px 40px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      background: var(--surface);
+      padding: 6px;
+      border-radius: var(--radius);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    select {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    input[type="file"]::file-selector-button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-right: 10px;
+    }
+
+    .qr-preview {
+      margin-top: 10px;
+      display: none;
+      width: 120px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 2px solid var(--accent);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 4px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff;
+    }
+
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      margin-top: 8px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 22px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.3s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: var(--success); color: var(--success); }
+    .toast.error   { border-color: var(--danger);  color: var(--danger);  }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+    }
+
+    .toggle-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: var(--border);
+      border-radius: 50px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .slider:before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    input:checked + .slider { background: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>⚙️ TeraBot Admin</h1>
+  <p>Manage plans, settings, and QR codes</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('plans')">💎 Plans</button>
+  <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+</div>
+
+<!-- ── PLANS TAB ──────────────────────────────────────────────── -->
+<div id="tab-plans" class="tab-content active">
+
+  <div class="card">
+    <div class="card-title">➕ Add New Plan</div>
+
+    <div class="form-group">
+      <label>Plan Name</label>
+      <input type="text" id="planName" placeholder="e.g. Monthly Premium" />
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label>Price (USD)</label>
+        <input type="number" id="planPrice" placeholder="4.99" min="0" step="0.01" />
+      </div>
+      <div class="form-group">
+        <label>Duration (Days)</label>
+        <input type="number" id="planDays" placeholder="30" min="1" step="1" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Payment QR Code</label>
+      <input type="file" id="qrUpload" accept="image/*" onchange="previewQR(this)" />
+      <img id="qrPreview" class="qr-preview" alt="QR Preview" />
+      <p class="hint">Upload a QR code image. Users will see this when paying.</p>
+    </div>
+
+    <button class="btn btn-primary" onclick="savePlan()">💾 Save Plan</button>
+  </div>
+
+</div>
+
+<!-- ── SETTINGS TAB ────────────────────────────────────────────── -->
+<div id="tab-settings" class="tab-content">
+
+  <div class="card">
+    <div class="card-title">🔄 Bot Settings</div>
+
+    <div class="toggle-wrap">
+      <span class="toggle-label">Allow Forwarding</span>
+      <label class="switch">
+        <input type="checkbox" id="forwarding" checked />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="form-group">
+      <label>Auto-Delete Timer (seconds, 0 = off)</label>
+      <input type="number" id="deltime" placeholder="0" min="0" step="1" />
+    </div>
+
+    <div class="form-group">
+      <label>Daily Download Limit (free users)</label>
+      <input type="number" id="limituse" placeholder="5" min="1" step="1" />
+    </div>
+
+    <button class="btn btn-primary" onclick="saveSettings()">💾 Save Settings</button>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.ready();
+  tg.expand();
+
+  // Apply Telegram theme colors if available
+  if (tg.colorScheme === 'light') {
+    document.documentElement.style.setProperty('--bg', '#f1f5f9');
+    document.documentElement.style.setProperty('--surface', '#ffffff');
+    document.documentElement.style.setProperty('--text', '#0f172a');
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+      b.classList.toggle('active', ['plans','settings'][i] === name);
+    });
+    document.querySelectorAll('.tab-content').forEach(el => {
+      el.classList.toggle('active', el.id === 'tab-' + name);
+    });
+  }
+
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => t.className = 'toast', 2800);
+  }
+
+  function previewQR(input) {
+    const preview = document.getElementById('qrPreview');
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function savePlan() {
+    const name  = document.getElementById('planName').value.trim();
+    const price = parseFloat(document.getElementById('planPrice').value);
+    const days  = parseInt(document.getElementById('planDays').value);
+
+    if (!name)            { showToast('❌ Plan name is required', 'error'); return; }
+    if (isNaN(price) || price <= 0) { showToast('❌ Enter a valid price', 'error'); return; }
+    if (isNaN(days)  || days  <= 0) { showToast('❌ Enter a valid duration', 'error'); return; }
+
+    const payload = JSON.stringify({ action: 'save_plan', name, price, days });
+    tg.sendData(payload);
+    showToast('✅ Plan sent to bot!', 'success');
+
+    // Reset form
+    document.getElementById('planName').value  = '';
+    document.getElementById('planPrice').value = '';
+    document.getElementById('planDays').value  = '';
+    document.getElementById('qrUpload').value  = '';
+    document.getElementById('qrPreview').style.display = 'none';
+  }
+
+  function saveSettings() {
+    const forwarding = document.getElementById('forwarding').checked;
+    const deltime    = parseInt(document.getElementById('deltime').value)  || 0;
+    const limit_use  = parseInt(document.getElementById('limituse').value) || 5;
+
+    const payload = JSON.stringify({ action: 'save_settings', forwarding, deltime, limit_use });
+    tg.sendData(payload);
+    showToast('✅ Settings saved!', 'success');
+  }
+</script>
+</body>
+</html>

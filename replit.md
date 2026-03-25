@@ -2,7 +2,35 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+pnpm workspace monorepo. Contains a TypeScript API scaffold and a Python Telegram bot (`terabot/`).
+
+## TeraBot (Python Telegram Bot)
+
+Located in `terabot/`. A Pyrogram-based Telegram bot that resolves and streams Terabox links.
+
+### Stack
+- **Framework**: Pyrogram 2.x
+- **Database**: MongoDB (Motor async driver)
+- **HTTP**: aiohttp
+- **Web server**: aiohttp web (proxy + static files)
+- **Config**: python-dotenv
+
+### Entry point
+Run via `terabot/main.py` (or the root `main.py` which starts it all).
+
+### Key files
+- `terabot/plugins/terabox.py` — Terabox link resolution, thumbnail sending, forwarded message support
+- `terabot/plugins/admin_panel.py` — Admin commands
+- `terabot/plugins/user_panel.py` — User-facing commands (/start, plans, contact)
+- `terabot/plugins/fsub_handler.py` — Force-subscribe logic
+- `terabot/database/cache_db.py` — MongoDB link cache (TTL-based)
+- `terabot/config.py` — Environment variable loading
+
+### Required env vars
+`BOT_TOKEN`, `API_ID`, `API_HASH`, `MONGO_URI`, `XAPIVERSE_KEY`, `ADMIN_IDS`
+
+### Optional env vars
+`SUPPORT_CHAT`, `PLAYER_BASE_URL`, `WEB_BASE_URL`, `CACHE_TTL_SECONDS`, `PORT`
 
 ## Stack
 

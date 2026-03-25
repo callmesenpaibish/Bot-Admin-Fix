@@ -148,7 +148,7 @@ def register(app: Client):
             else:
                 lines = ["📋 **Active Plans:**\n"]
                 for p in plans:
-                    lines.append(f"• **{p['name']}** — `${p['price']}` / `{p['duration_days']}d`\n  🆔 `{p['_id']}`")
+                    lines.append(f"• **{p['name']}** — `₹{p['price']}` / `{p['duration_days']}d`\n  🆔 `{p['_id']}`")
                 text = "\n".join(lines)
         else:
             text = _HELP.get(action, "ℹ️ No help available for this action.")
@@ -157,7 +157,7 @@ def register(app: Client):
         await callback.message.edit_text(text, reply_markup=_BACK_KB)
 
     # Back button
-    @app.on_callback_query(filters.regex("^adm:back$"))
+    @app.on_callback_query(filters.regex(r"^adm:back$"))
     async def admin_back_cb(client: Client, callback: CallbackQuery):
         if not await is_admin(callback.from_user.id):
             await callback.answer("⛔ Access Denied.", show_alert=True)
@@ -200,7 +200,7 @@ def register(app: Client):
             await message.reply_text(
                 f"✅ **Plan Saved!**\n\n"
                 f"📦 Name: `{name}`\n"
-                f"💰 Price: `${price}`\n"
+                f"💰 Price: `₹{price}`\n"
                 f"⏳ Duration: `{days} days`\n"
                 f"🆔 ID: `{plan_id}`"
             )
@@ -404,7 +404,7 @@ def register(app: Client):
             return
         plan_id = await add_plan(name, price, days)
         await message.reply_text(
-            f"✅ **Plan Added!**\n\n📦 `{name}` — `${price}` / `{days}d`\n🆔 `{plan_id}`"
+            f"✅ **Plan Added!**\n\n📦 `{name}` — `₹{price}` / `{days}d`\n🆔 `{plan_id}`"
         )
 
     @app.on_message(filters.command("delplan"))
@@ -426,7 +426,7 @@ def register(app: Client):
             return
         lines = ["📋 **Active Plans:**\n"]
         for p in plans:
-            lines.append(f"• **{p['name']}** — `${p['price']}` / `{p['duration_days']}d`\n  🆔 `{p['_id']}`")
+            lines.append(f"• **{p['name']}** — `₹{p['price']}` / `{p['duration_days']}d`\n  🆔 `{p['_id']}`")
         await message.reply_text("\n".join(lines))
 
     @app.on_message(filters.command("setqr"))

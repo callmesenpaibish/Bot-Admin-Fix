@@ -4,7 +4,7 @@ import asyncio
 import aiohttp
 from urllib.parse import quote
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 import config
 from database import cache_get, cache_set
@@ -23,7 +23,7 @@ def build_result_keyboard(download_link: str, file_name: str) -> InlineKeyboardM
     encoded_name = quote(file_name, safe="")
     player_url = f"{config.PLAYER_BASE_URL}?url={encoded_url}&name={encoded_name}"
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("▶️ Watch Online", url=player_url)],
+        [InlineKeyboardButton("▶️ Watch Online", web_app=WebAppInfo(url=player_url))],
         [InlineKeyboardButton("📥 Direct Download Link", url=download_link)],
     ])
 
@@ -187,7 +187,7 @@ async def handle_terabox(client: Client, message: Message):
 
     status_msg = await message.reply_text("🔄 **Processing your Terabox link...**")
 
-    # Try cache first
+    # Try cache first — only single-file results are cached
     cached = await cache_get(extracted_url)
     if cached:
         results = [cached]
@@ -201,25 +201,27 @@ async def handle_terabox(client: Client, message: Message):
                 "Make sure the Terabox link is public and try again."
             )
             return
-        # Cache only the first file result
-        r = results[0]
-        await cache_set(
-            extracted_url,
-            r["download_link"],
-            r["file_name"],
-            r["file_size"],
-            r["thumbnail"],
-            r["title"],
-        )
+        # Only cache single-file results — multi-file folder links are always re-fetched
+        # so every request gets the full file list, not just the first file
+        if len(results) == 1:
+            r = results[0]
+            await cache_set(
+                extracted_url,
+                r["download_link"],
+                r["file_name"],
+                r["file_size"],
+                r["thumbnail"],
+                r["title"],
+            )
         source_label = "🔗 Resolved via API"
 
     await status_msg.delete()
 
-    # If folder with multiple files, send a header message
+    # If folder with multiple files, send a header message first
     if len(results) > 1:
         await message.reply_text(
-            f"📂 **Found {len(results)} files in this link!**\n"
-            f"Sending them one by one... 👇"
+            f"📂 **Found {len(results)} files in this folder!**\n"
+            f"Sending each one separately 👇"
         )
 
     deltime = settings.get("deltime", 0)

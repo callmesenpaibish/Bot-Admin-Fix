@@ -49,7 +49,7 @@ def format_timestamp(ts: float | None) -> str:
 def build_main_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [
-            [KeyboardButton("🔽 Download video")],
+            [KeyboardButton("🔽 Download video"), KeyboardButton("🔍 Search")],
             [KeyboardButton("💎 Premium Plans"), KeyboardButton("📞 Contact us")],
         ],
         resize_keyboard=True,

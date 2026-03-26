@@ -93,11 +93,12 @@ def create_client() -> Client:
 
 
 def register_plugins(app: Client):
-    from plugins import admin_panel, user_panel, terabox, payment_flow
+    from plugins import admin_panel, user_panel, terabox, payment_flow, search
     admin_panel.register(app)
     user_panel.register(app)
     terabox.register(app)
     payment_flow.register(app)
+    search.register(app)
     logger.info("✅ All plugins registered")
 
 async def health_check(request):

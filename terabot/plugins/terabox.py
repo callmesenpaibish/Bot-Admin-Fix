@@ -242,7 +242,7 @@ def register(app: Client):
                 "start", "admin", "stats", "broadcast", "addadmin", "admins",
                 "addfsc", "delfsc", "forwarding", "deltime", "limituse",
                 "addplan", "delplan", "plans", "setqr", "approve", "reject",
-                "myplan", "contact",
+                "myplan", "contact", "search",
             ]
         )
     )
